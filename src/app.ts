@@ -2,7 +2,9 @@ import { User, Meal } from './users.js';
 import { TropPauvreErreur } from './erreurs.js';
 
 const user = new User(1, "Bob", 30);
+let menu: Meal[] = [];
 
+// recuperationd des repas
 async function fetchMeals(): Promise<Meal[]> {
     try {
         const response = await fetch("https://keligmartin.github.io/api/meals.json");
@@ -17,6 +19,7 @@ async function fetchMeals(): Promise<Meal[]> {
         throw error;
     }
 }
+
 
 // affichage des repas
 function afficherMeals(meals: Meal[]) {
@@ -46,11 +49,6 @@ function afficherMeals(meals: Meal[]) {
 }
 
 
-// affichage du solde
-function afficherWallet() {
-    document.getElementById("wallet")!.textContent = `Solde : ${user.wallet}€`;
-}
-
 // affichage du menu
 function afficherMenu() {
     const history = document.getElementById("menuList")!;
@@ -63,6 +61,42 @@ function afficherMenu() {
 }
 
 
+// affichage du solde
+function afficherWallet() {
+    document.getElementById("wallet")!.textContent = `Solde : ${user.wallet}€`;
+}
+
+
+function commander() {
+    if (menu.length === 0) {
+        alert("Le menu est vide !");
+        return;
+    }
+    try {
+        menu.forEach((meal) => user.orderMeal(meal));
+        alert("Commande passée !");
+        menu = [];
+        afficherMenu();
+        afficherWallet();
+        afficherHistorique();
+    } catch (error) {
+        if (error instanceof TropPauvreErreur) {
+            alert(error.message);
+        }
+    }
+}
+
+
+function afficherHistorique() {
+    const history = document.getElementById("orderHistory")!;
+    history.innerHTML = "";
+    user.orders.forEach((order) => {
+        const li = document.createElement("li");
+        li.textContent = `Commande #${order.id} — ${order.meals[0].name} — ${order.total}€`;
+        history.appendChild(li);
+    });
+}
+
 
 async function init(): Promise<void> {
     afficherWallet();
@@ -73,4 +107,6 @@ async function init(): Promise<void> {
     } catch {}
 }
 
+
+document.getElementById("commanderBtn")!.onclick = () => commander();
 init();
