@@ -1,11 +1,7 @@
-import { ErreurCustom } from './erreurs.js';
+import { User, Meal } from './users.js';
+import { TropPauvreErreur } from './erreurs.js';
 
-type Meal = {
-    id: number;
-    name: string;
-    calories: number;
-    price: number;
-};
+const user = new User(1, "Bob", 30);
 
 async function fetchMeals(): Promise<Meal[]> {
     try {
@@ -22,16 +18,27 @@ async function fetchMeals(): Promise<Meal[]> {
     }
 }
 
+// affichage des repas
 function afficherMeals(meals: Meal[]) {
     const mealList = document.getElementById("mealList")!;
-    
+
     meals.forEach((meal) => {
         const li = document.createElement("li");
         li.textContent = `${meal.name} - ${meal.price}€`;
 
         const button = document.createElement("button");
-        button.textContent = "Commander";
-        button.onclick = () => console.log("Commande :", meal.name);
+        button.textContent = "Ajouter";
+        button.onclick = () => {
+            try {
+                user.orderMeal(meal);
+                afficherWallet();
+                afficherMenu();
+            } catch (error) {
+                if (error instanceof TropPauvreErreur) {
+                    alert(error.message);
+                }
+            }
+        };
 
         li.appendChild(button);
         mealList.appendChild(li);
@@ -39,5 +46,31 @@ function afficherMeals(meals: Meal[]) {
 }
 
 
+// affichage du solde
+function afficherWallet() {
+    document.getElementById("wallet")!.textContent = `Solde : ${user.wallet}€`;
+}
 
-fetchMeals().then(afficherMeals).catch(() => {});
+// affichage du menu
+function afficherMenu() {
+    const history = document.getElementById("menuList")!;
+    history.innerHTML = "";
+    user.orders.forEach((order) => {
+        const li = document.createElement("li");
+        li.textContent = `${order.meals[0].name} — ${order.total}€`;
+        history.appendChild(li);
+    });
+}
+
+
+
+async function init(): Promise<void> {
+    afficherWallet();
+    afficherMenu();
+    try {
+        const meals = await fetchMeals();
+        afficherMeals(meals);
+    } catch {}
+}
+
+init();
