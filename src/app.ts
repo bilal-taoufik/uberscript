@@ -16,14 +16,28 @@ async function fetchMeals(): Promise<Meal[]> {
         return meals;
 
     } catch (error) {
-        console.error("Erreur du chargement des repas", error);
-        if (error instanceof ErreurCustom) {
-            alert(error.message);
-        } else {
-            alert("Erreur du chargement des repas");
-        }
+        console.error("Erreur lors du chargement des repas");
+        alert("Erreur lors du chargement des repas");
         throw error;
     }
 }
 
-fetchMeals();
+function afficherMeals(meals: Meal[]) {
+    const mealList = document.getElementById("mealList")!;
+    
+    meals.forEach((meal) => {
+        const li = document.createElement("li");
+        li.textContent = `${meal.name} - ${meal.price}€`;
+
+        const button = document.createElement("button");
+        button.textContent = "Commander";
+        button.onclick = () => console.log("Commande :", meal.name);
+
+        li.appendChild(button);
+        mealList.appendChild(li);
+    });
+}
+
+
+
+fetchMeals().then(afficherMeals).catch(() => {});
